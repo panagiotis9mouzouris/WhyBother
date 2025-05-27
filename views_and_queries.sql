@@ -76,3 +76,39 @@ JOIN countries ca ON m.away_team_id = ca.id
 WHERE (ch.name = 'France' AND ca.name = 'Germany')
    OR (ch.name = 'Germany' AND ca.name = 'France')
 ORDER BY m.match_date DESC;
+
+CREATE OR REPLACE VIEW top_scorers AS
+SELECT
+    p.id AS player_id,
+    p.name AS player,
+    c.name AS country,
+    COUNT(*) AS total_goals
+FROM goalscorers g
+JOIN players p ON g.player_id = p.id
+JOIN countries c ON p.country_id = c.id
+GROUP BY p.id, p.name, c.name
+ORDER BY total_goals DESC;
+
+CREATE OR REPLACE VIEW tournament_appearances AS
+SELECT
+    c.name AS country,
+    m.tournament,
+    COUNT(*) AS appearances
+FROM matches m
+JOIN countries c ON c.id IN (m.home_team_id, m.away_team_id)
+GROUP BY c.name, m.tournament;
+
+CREATE OR REPLACE VIEW france_vs_germany AS
+SELECT
+    m.match_date,
+    ch.name AS home_team,
+    m.home_score,
+    ca.name AS away_team,
+    m.away_score,
+    mr.winner
+FROM match_results mr
+JOIN matches m ON mr.match_id = m.id
+JOIN countries ch ON m.home_team_id = ch.id
+JOIN countries ca ON m.away_team_id = ca.id
+WHERE (ch.name = 'France' AND ca.name = 'Germany')
+   OR (ch.name = 'Germany' AND ca.name = 'France');
